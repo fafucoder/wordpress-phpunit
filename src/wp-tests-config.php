@@ -1,20 +1,20 @@
 <?php
 
 /* Path to the WordPress codebase you'd like to test. Add a forward slash in the end. */
-define( 'ABSPATH', '/tmp/wordpress/' );
+defined('ABSPATH') || define( 'ABSPATH', '/tmp/wordpress/' );
 
 
-define( 'WP_DEFAULT_THEME', 'default' );
+defined('WP_DEFAULT_THEME') || define( 'WP_DEFAULT_THEME', 'default' );
 
 // Test with WordPress debug mode (default).
-define( 'WP_DEBUG', true );
+defined('WP_DEBUG') || define( 'WP_DEBUG', true );
 
-define( 'DB_NAME', 'wordpress-tests' );
-define( 'DB_USER', 'root' );
-define( 'DB_PASSWORD', 'toor' );
-define( 'DB_HOST', 'localhost' );
-define( 'DB_CHARSET', 'utf8' );
-define( 'DB_COLLATE', '' );
+defined('DB_NAME') || define( 'DB_NAME', '' );
+defined('DB_USER') || define( 'DB_USER', '' );
+defined('DB_PASSWORD') || define( 'DB_PASSWORD', '' );
+defined('DB_HOST') || define( 'DB_HOST', 'localhost' );
+defined('DB_CHARSET') || define( 'DB_CHARSET', 'utf8' );
+defined('DB_COLLATE') || define( 'DB_COLLATE', '' );
 
 /**#@+
  * Authentication Unique Keys and Salts.
@@ -33,9 +33,9 @@ define('NONCE_SALT',       'put your unique phrase here');
 
 $table_prefix  = 'wptests_';   // Only numbers, letters, and underscores please!
 
-define( 'WP_TESTS_DOMAIN', 'example.org' );
-define( 'WP_TESTS_EMAIL', 'admin@example.org' );
-define( 'WP_TESTS_TITLE', 'Test Blog' );
+defined('WP_TESTS_DOMAIN') || define( 'WP_TESTS_DOMAIN', 'example.org' );
+defined('WP_TESTS_EMAIL') || define( 'WP_TESTS_EMAIL', 'admin@example.org' );
+defined('WP_TESTS_TITLE') || define( 'WP_TESTS_TITLE', 'Test Blog' );
 
 define( 'WP_PHP_BINARY', 'php' );
 

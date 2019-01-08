@@ -1,128 +1,175 @@
 <?php
-namespace Dawn\Autoload;
+namespace Dawn\Phpunit\Bootstrap;
 
-/**
- * Unit Tests Bootstrap.
- *
- * The class is based on frozzare/wp-test-suite implimentation, MIT license.
- *
- * @since 1.0.0
- */
 class Bootstrap {
+    public static $instance;
+
+    /**
+     * The plugins should be loaded.
+     * 
+     * @var array
+     */
+    protected $plugins = array();
+
+    /**
+     * The theme to switched.
+     * 
+     * @var string
+     */
+    protected $theme = '';
+
     /**
      * Files to load after `muplugins_loaded` filter.
      *
-     * @var object
+     * @var array
      */
-    protected static $files = array();
+    protected $bootstraps = array();
 
     /**
-     * Plugins that should be loaded.
-     *
-     * @var object
-     */
-    protected static $plugins = array();
-
-    /**
-     * WordPress test root.
-     *
+     * Wordpress test dir.
+     * 
      * @var string
      */
-    protected static $test_root = '';
+    protected $wordpress_test_dir;
 
     /**
-     * Find plugin automatically.
-     *
-     * @return array
+     * Wordpress dir.
+     * 
+     * @var string
      */
-    public static function find_plugin() {
-        $path = getcwd() . '/';
-        $file = defined('WTS_PLUGIN_FILE_NAME') ? WTS_PLUGIN_FILE_NAME : 'plugin.php';
+    protected $wordpress_dir;
 
-        if (empty($file) || !file_exists($path . $file)) {
-            return array();
+    /**
+     * If debug to turn on.
+     * 
+     * @var boolean
+     */
+    protected $debug = true;
+
+    /**
+     * Wordpress test database configs.
+     * 
+     * @var array
+     */
+    protected $database = array();
+
+    /**
+     * Test site config setting.
+     * 
+     * @var array
+     */
+    protected $info = array();
+
+    /**
+     * Single instance.
+     * 
+     * @param  array  $config [description]
+     * @return object         
+     */
+    public function getInstance($config = array()) {
+        if (!self::$instance || self::$instance instanceof self) {
+            self::$instance = new self($config);
         }
 
-        return array($path . $file);
+        return self::$instance;
     }
 
     /**
-     * Get test root.
-     *
-     * @return string
+     * Construct,
+     * 
+     * @param array $config 
      */
-    public static function get_test_root() {
-        if (!empty(self::$test_root) || file_exists(self::$test_root)) {
-            return self::$test_root;
-        }
-        if (getenv('WP_DEVELOP_DIR') !== false) {
-            return getenv('WP_DEVELOP_DIR') . '/tests/phpunit';
-        }
+    public function __construct($config = array()) {
+        $keys = array_keys(get_object_vars($this));
 
-        if (getenv('WP_TESTS_DIR') !== false) {
-            return getenv('WP_TESTS_DIR');
-        }
-
-        if (file_exists('/tmp/wordpress-develop/tests/phpunit/includes/bootstrap.php')) {
-            return '/tmp/wordpress-develop/tests/phpunit';
-        }
-
-        if (file_exists('/tmp/wordpress-tests-lib/includes/bootstrap.php')) {
-            return '/tmp/wordpress-tests-lib';
-        }
-
-        return '';
-    }
-
-    /**
-     * Load files.
-     *
-     * @param array|string $files
-     */
-    public static function load_files($files) {
-        if (is_string($files)) {
-            if (!file_exists($files)) {
-                return;
+        foreach ($config as $key => $value) {
+            if (in_array($key, $keys)) {
+                $this->$key = $value;
             }
-            self::$files[] = $files;
-        } elseif (is_array($files)) {
-            $files = array_filter($files, function ($file) {
-                return file_exists($file);
-            });
-            $files = array_unique($files);
-            self::$files = array_merge(self::$files, $files);
+        }
+        $this->wordpress_test_dir = $this->get_test_dir();
+    }
+
+    /**
+     * Set test dir.
+     * 
+     * @param string $test_dir 
+     */
+    public function set_test_dir($test_dir) {
+        $this->wordpress_test_dir = $test_dir;
+    }
+
+    /**
+     * Get test dir.
+     * 
+     * @return string 
+     */
+    public function get_test_dir() {
+        if (isset($this->wordpress_test_dir) && file_exists($this->wordpress_test_dir)) {
+            return $this->wordpress_test_dir;
+        } else {
+            return dirname(__DIR__) . '/wordpress-test-lib';
         }
     }
 
     /**
-     * Load plugins.
-     *
-     * @param array|string $plugins
+     * Set plugins.
+     * 
+     * @param mixed $plugins 
      */
-    public static function load_plugins($plugins) {
+    public function set_plugins($plugins) {
         if (is_string($plugins)) {
             if (!file_exists($plugins)) {
                 return;
             }
-
-            self::$plugins[] = $plugins;
+            $this->plugins[] = $plugins;
         } elseif (is_array($plugins)) {
             $plugins = array_filter($plugins, function ($plugin) {
                 return file_exists($plugin);
             });
             $plugins = array_unique($plugins);
-            self::$plugins = array_merge(self::$plugins, $plugins);
+            $this->plugins = array_merge($this->plugins, $plugins);
         }
     }
 
     /**
-     * Run WordPress tests.
-     *
-     * @param object $closure
+     * Set debug mode.
+     * 
+     * @param boolean $debug 
      */
-    public static function run($closure = null) {
-        $test_root = self::get_test_root();
-        $test_root = rtrim($test_root, '/');
+    public function set_debug($debug = true) {
+        $this->debug = $debug;
+    }
+
+    /**
+     * Set wordpress dir.
+     * 
+     * @param string $wordpress_dir 
+     */
+    public function set_wordpress_dir($wordpress_dir) {
+        $this->wordpress_dir = $wordpress_dir;
+    }
+
+    /**
+     * Set theme.
+     * 
+     * @param string $theme 
+     */
+    public function set_theme($theme) {
+        if (is_string($theme)) {
+            $this->theme = $theme;
+        } 
+    }
+
+    /**
+     * Run bootstrap.
+     * 
+     * @param  mixed $closure 
+     * @return void          
+     */
+    public function run($closure = null) {
+        $test_dir = $this->get_test_dir();
+        $test_dir = rtrim($test_dir, '/');
 
         if (empty($test_root) || !file_exists($test_root)) {
             throw new \Exception('Empty test root');
@@ -133,51 +180,69 @@ class Bootstrap {
         }
 
         if (!function_exists('tests_add_filter')) {
-            require $test_root . '/includes/functions.php';
+            require_once $test_root . '/includes/functions.php';
         }
 
-        if (empty(self::$plugins)) {
-            self::$plugins = self::find_plugin();
+        if (!empty($this->plugins)) {
+            foreach ($this->plugins as $plugin) {
+                if (!file_exists($plugin)) {
+                    continue;
+                }
+                tests_add_filter('muplugins_loaded', function () use ($plugin) {
+                    require_once $plugin;
+                });
+            }
         }
 
-        foreach (self::$plugins as $plugin) {
-            tests_add_filter('muplugins_loaded', function () use ($plugin) {
-                require $plugin;
+        if (!empty($this->theme)) {
+            tests_add_filter('muplugins_loaded', function () {
+                switch_theme($this->theme);
             });
         }
 
+        //init config file
+        $this->init_config();
+
         if (!file_exists($test_root . '/includes/bootstrap.php')) {
             throw new \Exception(sprintf('%s is missing', $test_root . '/includes/boostrap.php'));
-        }
-
-        if (!class_exists('WP_UnitTestCase')) {
-            require $test_root . '/includes/bootstrap.php';
-        }
-
-        if (!class_exists('AjaxUnitTestCase')) {
-            require __DIR__ . '/AjaxUnitTestCase.php';
-        }
-
-        if (!class_exists('RESTControllerTestCase')) {
-            require __DIR__ . '/RESTControllerTestCase.php';
         }
 
         if (is_callable($closure)) {
             call_user_func($closure);
         }
 
-        foreach (self::$files as $file) {
-            require $file;
+        foreach ($this->bootstraps as $file) {
+            if (file_exists($file)) {
+                require_once $file;
+            }
         }
     }
 
     /**
-     * Set test root.
-     *
-     * @param string $test_rot
-     * @param mixed  $test_root
+     * Init config.
+     * 
+     * @return void 
      */
-    public static function set_test_root($test_root) {
-        self::$test_root = $test_root;
+    protected function init_config() {
+        if (!empty($this->wordpress_dir)) {
+            define('ABSPATH', $this->wordpress_dir);
+        }
+
+        if (!empty($this->debug)) {
+            define('WP_DEBUG', $this->debug);
+        }
+
+        if (!empty($this->database)) {
+            foreach ($this->database as $key => $value) {
+                define(strtoupper($key), $value);
+            }
+        }
+
+        if (!empty($this->info)) {
+            foreach ($this->info as $key => $value) {
+                $key = "WP_TESTS_" . strtoupper($key);
+                define($key, $value);
+            }
+        }
     }
 }

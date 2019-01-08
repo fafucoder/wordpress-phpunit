@@ -14,8 +14,7 @@
     "require": {},
     "bin": ["bin/wordpress_test_install"],
     "autoload": {
-    	"classmap": [
-    		"src/"
-    	]
+        "psr-4": {"Dawn\\Phpunit\\Bootstrap": "src/bootstrap/"},
+    	"classmap": ["src/"]
     }
 }
