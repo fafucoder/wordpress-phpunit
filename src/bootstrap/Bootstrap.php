@@ -168,19 +168,23 @@ class Bootstrap {
      * @return void          
      */
     public function run($closure = null) {
-        $test_dir = $this->get_test_dir();
-        $test_dir = rtrim($test_dir, '/');
+        $test_root = $this->get_test_dir();
+        $test_root = rtrim($test_root, '/');
 
         if (empty($test_root) || !file_exists($test_root)) {
             throw new \Exception('Empty test root');
         }
 
-        if (!file_exists($test_root . '/includes/functions.php')) {
-            throw new \Exception(sprintf('%s is missing', $test_root . '/includes/functions.php'));
+        if (!file_exists($test_root . '/includes/functions.php') || !file_exists($test_root . '/functions.php')) {
+            throw new \Exception("functions.php in missing!");
         }
 
         if (!function_exists('tests_add_filter')) {
-            require_once $test_root . '/includes/functions.php';
+            if (file_exists($test_root . '/includes/functions.php')) {
+                require_once $test_root . '/includes/functions.php';
+            } elseif (file_exists($test_root . '/functions.php')) {
+                require_once $test_root . '/functions.php';
+            }
         }
 
         if (!empty($this->plugins)) {
@@ -203,8 +207,16 @@ class Bootstrap {
         //init config file
         $this->init_config();
 
-        if (!file_exists($test_root . '/includes/bootstrap.php')) {
-            throw new \Exception(sprintf('%s is missing', $test_root . '/includes/boostrap.php'));
+        if (!file_exists($test_root . '/includes/bootstrap.php') || !file_exists($test_root . '/bootstrap.php')) {
+            throw new \Exception("bootstrap.php is missing!");
+        }
+
+        if (!class_exists('WP_UnitTestCase')) {
+            if (file_exists($test_root . '/includes/bootstrap.php')) {
+                require_once $test_root . '/includes/bootstrap.php';
+            } elseif (file_exists($test_root . '/bootstrap.php')) {
+                require_once $test_root . '/bootstrap.php';
+            }
         }
 
         if (is_callable($closure)) {
