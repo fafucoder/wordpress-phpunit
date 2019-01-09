@@ -12,7 +12,6 @@
     "keywords" : ["wordpress", "phpunit"],
     "license": "MIT",
     "require": {},
-    "bin": ["bin/wordpress_test_install"],
     "autoload": {
         "psr-4": {"Dawn\\Phpunit\\Bootstrap": "src/bootstrap/"},
     	"classmap": ["src/"]
