@@ -7,7 +7,6 @@
             "email": "1960754013@qq.com"
         }
     ],
-    "version": "1.0.0",
     "type": "library",
     "keywords" : ["wordpress", "phpunit"],
     "license": "MIT",
