@@ -12,7 +12,7 @@
     "license": "MIT",
     "require": {},
     "autoload": {
-        "psr-4": {"Dawn\\Phpunit\\Bootstrap": "src/bootstrap/"},
+        "psr-4": {"Dawn\\Phpunit\\Bootstrap\\": "src/bootstrap/"},
     	"classmap": ["src/"]
     }
 }
