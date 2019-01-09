@@ -175,7 +175,7 @@ class Bootstrap {
             throw new \Exception('Empty test root');
         }
 
-        if (!file_exists($test_root . '/includes/functions.php') || !file_exists($test_root . '/functions.php')) {
+        if (!file_exists($test_root . '/includes/functions.php') && !file_exists($test_root . '/functions.php')) {
             throw new \Exception("functions.php in missing!");
         }
 
@@ -207,7 +207,7 @@ class Bootstrap {
         //init config file
         $this->init_config();
 
-        if (!file_exists($test_root . '/includes/bootstrap.php') || !file_exists($test_root . '/bootstrap.php')) {
+        if (!file_exists($test_root . '/includes/bootstrap.php') && !file_exists($test_root . '/bootstrap.php')) {
             throw new \Exception("bootstrap.php is missing!");
         }
 
